@@ -1,0 +1,492 @@
+---
+
+## File tree
+```
+.
+├─ package.json
+├─ vercel.json
+├─ index.html
+├─ vite.config.js
+├─ postcss.config.js
+├─ tailwind.config.js
+├─ src/
+│  ├─ main.jsx
+│  ├─ App.jsx
+│  └─ styles.css
+└─ api/
+   └─ contact.js
+```
+
+---
+
+### package.json
+```json
+{
+  "name": "bssl-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "vite": "^5.4.0"
+  }
+}
+```
+
+---
+
+### vercel.json
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
+```
+
+---
+
+### index.html
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bischer Safe & Secure Locksmith (BSSL)</title>
+    <meta name="description" content="SCIF & secure facility door solutions: STC/RF‑STC doors and GSA vault doors. DoD experienced." />
+  </head>
+  <body class="bg-neutral-50 text-neutral-900">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+```
+
+---
+
+### vite.config.js
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+```
+
+> Note: Vite automatically serves `index.html`. No special config needed for Vercel.
+
+---
+
+### postcss.config.js
+```js
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+---
+
+### tailwind.config.js
+```js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+---
+
+### src/styles.css
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional tweaks */
+:root { color-scheme: light; }
+```
+
+---
+
+### src/main.jsx
+```jsx
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import './styles.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+```
+
+---
+
+### src/App.jsx
+```jsx
+import { useState } from 'react'
+
+export default function App() {
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [status, setStatus] = useState(null)
+
+  async function submitForm(e) {
+    e.preventDefault()
+    const form = new FormData(e.currentTarget)
+    const payload = Object.fromEntries(form.entries())
+    setStatus('Sending…')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      setStatus(data.ok ? 'Thanks! We\'ll be in touch shortly.' : 'Something went wrong.')
+      if (data.ok) e.currentTarget.reset()
+    } catch (err) {
+      setStatus('Network error — try again?')
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-neutral-50 text-neutral-900">
+      {/* SEO + JSON-LD */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{__html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        name: "Bischer Safe & Secure Locksmith (BSSL)",
+        url: "https://bssl.info",
+        telephone: "+1-555-555-5555",
+        address: {
+          "@type": "PostalAddress",
+          addressRegion: "CA",
+          addressCountry: "US"
+        },
+        description: "SCIF & secure facility solutions: install, replace, and repair STC / RF-STC doors and GSA vault doors.",
+        areaServed: "United States"
+      }) }} />
+
+      <header className="sticky top-0 z-40 backdrop-blur bg-white/80 border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-neutral-900 text-white grid place-content-center font-black">B</div>
+              <div className="leading-tight">
+                <div className="font-semibold tracking-tight">Bischer Safe & Secure Locksmith</div>
+                <div className="text-xs text-neutral-500">SCIF • STC/RF-STC • Vault Doors</div>
+              </div>
+            </div>
+
+            <nav className="hidden md:flex items-center gap-8 text-sm">
+              <a href="#services" className="hover:text-neutral-600">Services</a>
+              <a href="#certs" className="hover:text-neutral-600">Certifications</a>
+              <a href="#projects" className="hover:text-neutral-600">Projects</a>
+              <a href="#about" className="hover:text-neutral-600">About</a>
+              <a href="#contact" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-neutral-300 hover:bg-neutral-100">Contact</a>
+            </nav>
+
+            <button aria-label="Open menu" className="md:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-neutral-300" onClick={() => setMobileOpen(v => !v)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+        {mobileOpen && (
+          <div className="md:hidden border-t border-neutral-200 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 grid gap-2 text-sm">
+              <a href="#services" className="py-2" onClick={() => setMobileOpen(false)}>Services</a>
+              <a href="#certs" className="py-2" onClick={() => setMobileOpen(false)}>Certifications</a>
+              <a href="#projects" className="py-2" onClick={() => setMobileOpen(false)}>Projects</a>
+              <a href="#about" className="py-2" onClick={() => setMobileOpen(false)}>About</a>
+              <a href="#contact" className="py-2" onClick={() => setMobileOpen(false)}>Contact</a>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(1200px_400px_at_50%_-100px,rgba(0,0,0,0.08),transparent)]" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+          <div className="grid md:grid-cols-2 gap-10 items-center">
+            <div>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">SCIF & Secure Facility Door Solutions</h1>
+              <p className="mt-5 text-neutral-700 md:text-lg">Install, replace, and repair <span className="font-semibold">STC/RF‑STC</span> doors and <span className="font-semibold">GSA‑approved vault doors</span>. DoD‑experienced. Rapid site surveys. Compliant paperwork.</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a href="#contact" className="px-5 py-3 rounded-2xl bg-neutral-900 text-white">Request a quote</a>
+                <a href="#services" className="px-5 py-3 rounded-2xl border border-neutral-300">Explore services</a>
+              </div>
+              <ul className="mt-6 text-sm text-neutral-600 grid gap-1">
+                <li>• Federal & DoD contracting experience (CONUS & OCONUS)</li>
+                <li>• Site prep / surveys, procurement, install, acceptance docs</li>
+                <li>• Partnerships with Brown Safe, S&G, and GSA‑listed suppliers</li>
+              </ul>
+            </div>
+            <div className="relative">
+              <div className="aspect-[4/3] rounded-3xl bg-white border border-neutral-200 shadow-sm overflow-hidden">
+                <div className="h-full w-full grid place-content-center">
+                  <div className="text-center p-8">
+                    <div className="text-xs uppercase tracking-widest text-neutral-500">Illustration</div>
+                    <div className="mt-2 text-lg font-semibold">Secure Door Assembly</div>
+                    <div className="mt-3 text-sm text-neutral-600">Exploded view: frame, leaf, astragal, thresholds, hardware & lockset (S&G 2937 / X‑10 optional).</div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -left-4 bg-white border border-neutral-200 rounded-2xl shadow p-3 text-xs">Lead times confirmed at quote • Travel-ready techs</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services */}
+      <section id="services" className="py-16 md:py-24 border-t border-neutral-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Services</h2>
+          <p className="mt-3 text-neutral-700 max-w-3xl">End‑to‑end delivery for secure facilities. Turnkey or à la carte. All services documented to contract requirements.</p>
+          <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { title: 'SCIF Door Install/Replace', body: 'STC and RF‑STC assemblies, seals, thresholds, and hardware per spec. Shim, plumb, swing, and acceptance checks included.', bullets: ['STC 45–55 typical', 'RF‑STC per spec', 'Hardware & gasketing'] },
+              { title: 'GSA Vault Doors', body: 'Supply and install Class 5‑B vault doors with compliant locksets (e.g., S&G 2937 or X‑10). Removal/disposal of legacy doors available.', bullets: ['Brown Safe partner', '2937 / X‑10', 'Acceptance checklist'] },
+              { title: 'RF & Acoustic Upgrades', body: 'Retrofit gaskets, astragals, thresholds, and latching systems to meet target attenuation.', bullets: ['Door sweep & saddle', 'Perimeter seals', 'Frame reinforcement'] },
+              { title: 'Site Surveys & Planning', body: 'Rapid measurement trips (CONUS/OCONUS). Shop drawings, submittals, and logistics plan within 5 business days of survey.', bullets: ['Shop drawings', 'Crate & ship plan', 'MOP/SOP handoff'] },
+              { title: 'Maintenance & Repair', body: 'Re‑hangs, hinge/closer service, lock replacement, re‑gasketing, and compliance tune‑ups.', bullets: ['Preventive PM', 'Hardware swap', 'Seal refresh'] },
+              { title: 'Documentation', body: 'GSA certificates, product data (Attachment B/C), QA/QC checklists, and acceptance evidence packaged to contract.', bullets: ['QA/QC forms', 'Test results', 'As‑built photos'] },
+            ].map((card, i) => (
+              <div key={i} className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="text-sm font-semibold text-neutral-500">0{i+1}</div>
+                <h3 className="mt-2 font-bold text-lg">{card.title}</h3>
+                <p className="mt-2 text-neutral-700 text-sm">{card.body}</p>
+                <ul className="mt-4 text-sm text-neutral-600 grid gap-1">
+                  {card.bullets.map((b, j) => <li key={j}>• {b}</li>)}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Certifications / Partners */}
+      <section id="certs" className="py-16 md:py-24 border-t border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Certifications & Capabilities</h2>
+          <div className="mt-6 grid md:grid-cols-2 gap-6">
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+              <h3 className="font-semibold">Compliance</h3>
+              <ul className="mt-3 text-sm text-neutral-700 grid gap-1">
+                <li>• GSA‑approved product lines (vault doors: Class 5‑B)</li>
+                <li>• Locksets: Sargent & Greenleaf 2937 or X‑10 (as specified)</li>
+                <li>• Submittals: product data, certs, and QA/QC checklists</li>
+                <li>• Safety: JHAs, LOTO, lift plans, crate handling SOPs</li>
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+              <h3 className="font-semibold">Past Performance & Logistics</h3>
+              <ul className="mt-3 text-sm text-neutral-700 grid gap-1">
+                <li>• DoD base access & on‑site compliance</li>
+                <li>• OCONUS shipping for oversize crated doors</li>
+                <li>• Rapid survey deployments (e.g., Guam)</li>
+                <li>• Full acceptance package at closeout</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Projects */}
+      <section id="projects" className="py-16 md:py-24 border-t border-neutral-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Selected Projects</h2>
+          <p className="mt-3 text-neutral-700">Replace with real case studies once ready. Each card links to a one‑pager PDF or gallery.</p>
+
+          <div className="mt-8 grid md:grid-cols-3 gap-6">
+            {[1,2,3].map((i)=> (
+              <a key={i} href="#" className="group rounded-2xl border border-neutral-200 overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+                <div className="aspect-[4/3] bg-neutral-100 grid place-content-center text-neutral-400">Image {i}</div>
+                <div className="p-5">
+                  <div className="text-sm text-neutral-500">SCIF / Vault</div>
+                  <div className="mt-1 font-semibold">Project {i} — Door Upgrade</div>
+                  <div className="mt-2 text-sm text-neutral-600">STC/RF‑STC assembly with compliant hardware and acceptance docs.</div>
+                  <div className="mt-3 text-sm font-medium text-neutral-900 group-hover:underline">View details →</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About */}
+      <section id="about" className="py-16 md:py-24 border-t border-neutral-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">About BSSL</h2>
+          <div className="mt-6 grid md:grid-cols-3 gap-8">
+            <div className="md:col-span-2 text-neutral-700 leading-relaxed">
+              <p>
+                Bischer Safe & Secure Locksmith (BSSL) delivers secure‑door solutions for SCIFs and other high‑security spaces. We handle surveys, procurement, installation, and acceptance—documented to contract.
+              </p>
+              <p className="mt-4">
+                Our background includes federal/DoD environments, OCONUS logistics, and turnkey handoffs with QA/QC packages. We coordinate with base access, safety, and facility teams to minimize downtime.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+              <h3 className="font-semibold">Quick Facts</h3>
+              <ul className="mt-3 text-sm text-neutral-700 grid gap-1">
+                <li>• DUNS / CAGE: Available on request</li>
+                <li>• NAICS: 238390, 561622</li>
+                <li>• Insurance & safety programs current</li>
+                <li>• Small business</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" className="py-16 md:py-24 border-t border-neutral-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Get a Quote</h2>
+          <p className="mt-3 text-neutral-700">Tell us about your project. We typically respond within 1 business day.</p>
+
+          <div className="mt-8 grid md:grid-cols-3 gap-8">
+            <form className="md:col-span-2 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm grid grid-cols-1 gap-4" onSubmit={submitForm}>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Name</label>
+                  <input name="name" className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="Your name" required />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Email</label>
+                  <input name="email" type="email" className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="you@company.com" required />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Phone</label>
+                <input name="phone" className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-2" placeholder="(555) 555‑5555" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Project Details</label>
+                <textarea name="message" className="mt-1 w-full rounded-xl border border-neutral-300 px-3 py-2 min-h-[140px]" placeholder="Scope, location, timelines, STC/RF requirements…" />
+              </div>
+              <div className="flex items-center gap-3">
+                <button className="px-5 py-3 rounded-2xl bg-neutral-900 text-white">Send</button>
+                <span className="text-sm text-neutral-500">Or email <a className="underline" href="mailto:hello@bssl.info">hello@bssl.info</a></span>
+                {status && <span className="text-sm text-neutral-600">{status}</span>}
+              </div>
+            </form>
+
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+              <h3 className="font-semibold">Contact</h3>
+              <ul className="mt-3 text-sm text-neutral-700 grid gap-1">
+                <li>Phone: <a href="tel:+15555555555" className="underline">(555) 555‑5555</a></li>
+                <li>Email: <a href="mailto:hello@bssl.info" className="underline">hello@bssl.info</a></li>
+                <li>Hours: Mon–Fri 8:00–17:00 PT</li>
+              </ul>
+              <div className="mt-6 text-sm text-neutral-600">
+                Prefer a purchase order? We can provide W‑9, insurance, and capability statement upon request.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-neutral-200 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="text-sm text-neutral-600">© {new Date().getFullYear()} Bischer Safe & Secure Locksmith</div>
+          <div className="text-sm text-neutral-500 flex items-center gap-4">
+            <a href="#" className="hover:text-neutral-800">Terms</a>
+            <a href="#" className="hover:text-neutral-800">Privacy</a>
+            <a href="mailto:hello@bssl.info" className="hover:text-neutral-800">Contact</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  )
+}
+```
+
+---
+
+### api/contact.js
+```js
+// Simple Vercel serverless function to accept contact form submissions.
+// Extend this to send email via an API like Resend, SendGrid, Postmark, or SES.
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method not allowed' })
+  const { name, email, phone, message } = req.body || {}
+
+  // Basic validation
+  if (!name || !email) return res.status(400).json({ ok: false, error: 'Missing required fields' })
+
+  // TODO: Persist or email. For now, log to Vercel function logs.
+  console.log('Contact submission:', { name, email, phone, message })
+
+  return res.status(200).json({ ok: true })
+}
+```
+
+---
+
+## Local run
+```bash
+npm i
+npm run dev
+```
+Visit http://localhost:5173
+
+## Build
+```bash
+npm run build
+```
+Output goes to `dist/`.
+
+## Deploy on Vercel (repo path)
+1) Create a new GitHub repo and push these files.
+2) In Vercel → New Project → Import your repo.
+3) Framework: **Vite** (auto-detected). Build command `npm run build`, Output `dist`.
+4) Deploy.
+
+## Point **bssl.info** to Vercel
+- In Vercel → Settings → Domains → Add `bssl.info` and `www.bssl.info`.
+- Your registrar DNS:
+  - `www` → **CNAME** → `cname.vercel-dns.com` (Vercel will show exact target).
+  - Root `@` → **Apex**: either set **ALIAS/ANAME** to your Vercel domain if supported, or use Vercel’s **A records** they provide. Vercel also supports **CNAME flattening** at some registrars.
+- Wait for DNS to propagate; Vercel will provision SSL automatically.
+
+## (Optional) Wire up email for the contact form
+- Add a provider (Resend, Postmark, SendGrid, SES). Example with Resend:
+  - `npm i resend`
+  - Create `RESEND_API_KEY` in Vercel → Project → Settings → Environment Variables.
+  - Replace `api/contact.js` with a version that calls Resend to email `hello@bssl.info` with the payload.
+
+## Next steps we can do quickly
+- Swap placeholder phone/email, drop your photos, add a Projects gallery, and publish a downloadable Capability Statement PDF.
+- Add analytics (Vercel Web Analytics or Cloudflare Web Analytics) and a spam‑protected form (honeypot + server‑side validation).
