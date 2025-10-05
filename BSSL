@@ -1,3 +1,12 @@
+# BSSL — Vercel-ready Vite + React + Tailwind
+
+Below is a minimal repository you can copy/paste into files. It builds on Vercel with zero config, includes Tailwind, and ships a working `/api/contact` serverless function (returns a success JSON; you can wire email later).
+
+---
+
+## File tree
+```
+.
 ├─ package.json
 ├─ vercel.json
 ├─ index.html
